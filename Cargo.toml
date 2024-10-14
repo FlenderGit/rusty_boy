@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "core",
+    "apps/crossterm",
+    "apps/web",
+    "apps/python"
+]
+
+resolver = "2"

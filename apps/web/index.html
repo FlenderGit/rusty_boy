@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+  </head>
+
+  <body class="min-h-screen flex flex-col bg-gray-100">
+    <header class="bg-white shadow-sm">
+      <div
+        class="container mx-auto px-4 py-2 flex justify-between items-center"
+      >
+        <a href="#" class="text-2xl font-bold text-gray-800">rusty_boy</a>
+        <nav class="hidden md:flex space-x-6">
+          <a href="#" className="text-gray-600 hover:text-gray-900">Games</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
+          <a href="/doc" className="text-gray-600 hover:text-gray-900"
+            >Documentation</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main
+      x-data="gameboy_handler()"
+      class="flex-grow container max-w-2xl xs:max-w-none mx-auto px-4 py-8 flex flex-col items-center justify-center"
+    >
+      <div
+        class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+      >
+        <div class="bg-gray-800 p-8 relative aspect-[160/144]">
+          <div
+            x-show="!rom_name"
+            class="h-full bg-green-900 rounded-lg overflow-hidden shadow-inner"
+          >
+            <div class="flex items-center justify-center h-full">
+              <p
+                class="text-green-400 text-lg font-mono"
+                x-text="error ? error : 'Game screen'"
+              ></p>
+            </div>
+          </div>
+
+          <canvas
+            x-show="rom_name"
+            x-cloak
+            height="144"
+            width="160"
+            class="w-full h-full"
+          ></canvas>
+
+          <div
+            class="absolute top-4 left-4 w-2 h-2 rounded-full bg-red-500 shadow"
+          ></div>
+          <div class="absolute bottom-4 left-4 flex space-x-1">
+            <div class="w-8 h-1 bg-gray-600 rounded"></div>
+            <div class="w-8 h-1 bg-gray-600 rounded"></div>
+          </div>
+        </div>
+
+        <div class="px-4 py-2 flex justify-between items-center">
+          <div
+            class="relative flex w-full max-w-sm flex-col gap-1 text-neutral-800 dark:text-neutral-300"
+            x-show="!rom_name"
+          >
+            <input
+              id="fileInput"
+              type="file"
+              @change="onFileChange()"
+              accept=".gb,.gbc,.gba"
+              class="w-full overflow-clip rounded-2xl border border-neutral-300 bg-neutral-200/50 text-sm file:mr-4 file:cursor-pointer file:border-none file:bg-neutral-200 file:px-4 file:py-2 file:font-medium file:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:cursor-not-allowed disabled:opacity-75 dark:border-neutral-700 dark:bg-neutral-900/50 dark:file:bg-neutral-900 dark:file:text-neutral-100 dark:focus-visible:outline-purple-400"
+            />
+          </div>
+          <div x-cloak x-show="rom_name" class="flex gap-2 items-center">
+            <span class="material-symbols-outlined text-gray-500 animate-pulse">
+              view_cozy
+            </span>
+            <p class="text-gray-600 font-semibold">
+              Playing <span x-text="rom_name"></span>
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <div class="cursor-pointer">
+              <span
+                @click="control = true"
+                class="p-2 hover:bg-gray-100 text-gray-500 rounded-md material-symbols-outlined transition-colors"
+                >sports_esports</span
+              >
+              <span
+                @click="help = true"
+                class="p-2 hover:bg-gray-100 text-gray-500 rounded-md material-symbols-outlined transition-colors"
+                >info</span
+              >
+              <span
+                @click="setFullScreen"
+                class="p-2 hover:bg-gray-100 text-gray-500 rounded-md material-symbols-outlined transition-colors"
+              >
+                fullscreen
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="!rom_name" class="mt-12 text-center">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-4">How to Play</h2>
+        <p class="text-gray-600 max-w-md mx-auto">
+          Upload your Game Boy ROM file using the button above. Once uploaded,
+          the game will start automatically in the emulator screen.
+        </p>
+      </div>
+
+      <div
+        x-cloak
+        x-show="help"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      >
+        <div
+          class="container bg-white p-8 rounded-lg max-w-md"
+          @click.away="help = false"
+        >
+          <h2 class="text-2xl font-semibold text-gray-900 mb-4">How to Play</h2>
+
+          <div x-show="!rom_name" class="text-center">
+            <p class="text-gray-600 max-w-md mx-auto">Upload your Game</p>
+          </div>
+
+          <ul x-show="rom_name" class="list-none">
+            <li class="flex justify-between py-2 border-b border-gray-200">
+              <p class="text-gray-600">Name</p>
+              <p x-text="rom_name" class="text-gray-800"></p>
+            </li>
+            <li class="flex justify-between py-2 border-b border-gray-200">
+              <p class="text-gray-600">MBC</p>
+              <p x-text="getMbc(mbc)" class="text-gray-800"></p>
+            </li>
+          </ul>
+          <button
+            @click="help = false"
+            class="mt-4 bg-gray-800 text-white px-4 py-2 rounded-md"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      <div
+        x-cloak
+        x-show="control"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      >
+        <div
+          class="container flex flex-col gap-2 bg-white p-4 rounded-lg max-w-md"
+          @click.away="control = false"
+        >
+          <h2 class="text-2xl font-semibold text-gray-900 mb-4">Key mapping</h2>
+
+          <div
+            x-data="{ keys: [
+                    { key: 'Z', action: 'Up'},
+                    { key: 'S', action: 'Down'},
+                    { key: 'Q', action: 'Left'},
+                    { key: 'D', action: 'Right'},
+                    { key: 'Enter', action: 'Start'},
+                    { key: 'Space', action: 'Select'},
+                    { key: 'J', action: 'A'},
+                    { key: 'K', action: 'B'},
+                ]}"
+            class="grid grid-cols-2 gap-6 mt-4"
+          >
+            <template x-for="key in keys">
+              <div class="flex items center justify-between">
+                <p x-text="key.action" class="text-gray-600"></p>
+                <kbd
+                  x-text="key.key"
+                  class="bg-gray-100 px-2 py-1 rounded-md"
+                ></kbd>
+              </div>
+            </template>
+          </div>
+
+          <button
+            @click="control = false"
+            class="mt-4 bg-gray-800 text-white px-4 py-2 rounded-md ml-auto"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+      <div class="container mx-auto px-4">
+        <div
+          class="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-400"
+        >
+          <p>&copy; 2024 rusty_boy. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+
+  <script type="module">
+    import __wbg_init, { RustyBoy } from "./generated/web.js";
+
+    __wbg_init().then(() => {
+      console.log("RustyBoy", RustyBoy);
+      window.RustyBoy = RustyBoy;
+    });
+  </script>
+
+  <script>
+    let gameboy = null;
+    let frame_time = 1000 / 60;
+    let previous_time = performance.now();
+    let currentAnimation = null;
+
+    let canvas = document.querySelector("canvas");
+    let ctx = canvas.getContext("2d");
+    let img_buffer = ctx.createImageData(160, 144);
+
+    window.addEventListener("keydown", (e) => {
+      if (!e.repeat) {
+        console.log("Pressed", e.keyCode);
+        gameboy.press_key(e.keyCode);
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (!e.repeat) {
+        console.log("Release", e.keyCode);
+        gameboy.release_key(e.keyCode);
+      }
+    });
+
+    const on_frame = () => {
+      let current_time = performance.now();
+      let elapsed_time = current_time - previous_time;
+
+      if (elapsed_time < frame_time) {
+        requestAnimationFrame(on_frame);
+        return;
+      }
+
+      gameboy.run_frame();
+      let frame = gameboy.get_screen_data();
+
+      // screen RGB to RGBA pal
+      for (let i = 0; i < frame.length; i += 3) {
+        let color = frame[i];
+        let index = (i * 4) / 3;
+        img_buffer.data[index] = color;
+        img_buffer.data[index + 1] = color;
+        img_buffer.data[index + 2] = color;
+        img_buffer.data[index + 3] = 255;
+      }
+
+      ctx.putImageData(img_buffer, 0, 0);
+
+      previous_time = current_time;
+      requestAnimationFrame(on_frame);
+    };
+
+    function gameboy_handler() {
+      return {
+        animationFrame: null,
+        error: null,
+
+        rom_name: null,
+        mbc: null,
+
+        help: false,
+        control: false,
+
+        async onFileChange() {
+          const file = event.target.files[0];
+
+          // Check if file is valid
+          if (
+            !file ||
+            !["gb", "gbc", "gba"].some((ext) => file.name.endsWith(ext))
+          ) {
+            this.error = "Invalid file type";
+            this.rom_name = null;
+            event.target.value = "";
+            return;
+          }
+
+          this.error = null;
+
+          const array_buffer = await file.arrayBuffer();
+          const buffer = new Uint8Array(array_buffer);
+
+          try {
+            gameboy = new RustyBoy(buffer);
+          } catch (error) {
+            console.error("Error", error);
+            this.error = error.match(/error: "(.*?)"/)[1];
+            return;
+          }
+
+          // Get the rom file name from the buffer
+          let rom_name = String.fromCharCode(...buffer.slice(0x134, 0x143));
+          this.rom_name = rom_name.split("\0")[0];
+          this.mbc = buffer[0x147];
+          // Bind the fnAnimationFrame to the current instance
+          currentAnimation = requestAnimationFrame(on_frame);
+        },
+
+        onCloseGame() {
+          this.rom_name = null;
+          cancelAnimationFrame(this.animationFrame);
+        },
+
+        setFullScreen() {
+          // Fullscreen on canvas
+          const canvas = document.querySelector("canvas");
+          canvas.requestFullscreen();
+        },
+
+        getMbc(value) {
+          switch (value) {
+            case 0x00:
+              return "ROM ONLY";
+            case 0x01:
+              return "MBC1";
+            case 0x02:
+              return "MBC1+RAM";
+            case 0x03:
+              return "MBC1+RAM+BATTERY";
+            case 0x05:
+              return "MBC2";
+            case 0x06:
+              return "MBC2+BATTERY";
+            case 0x08:
+              return "ROM+RAM";
+            case 0x09:
+              return "ROM+RAM+BATTERY";
+            case 0x0b:
+              return "MMM01";
+            case 0x0c:
+              return "MMM01+RAM";
+            case 0x0d:
+              return "MMM01+RAM+BATTERY";
+            case 0x0f:
+              return "MBC3+TIMER+BATTERY";
+            case 0x10:
+              return "MBC3+TIMER+RAM+BATTERY";
+            case 0x11:
+              return "MBC3";
+            case 0x12:
+              return "MBC3+RAM";
+            case 0x13:
+              return "MBC3+RAM+BATTERY";
+            case 0x19:
+              return "MBC5";
+            case 0x1a:
+              return "MBC5+RAM";
+            case 0x1b:
+              return "MBC5+RAM+BATTERY";
+            case 0x1c:
+              return "MBC5+RUMBLE";
+            case 0x1d:
+              return "MBC5+RUMBLE+RAM";
+            case 0x1e:
+              return "MBC5+RUMBLE+RAM+BATTERY";
+            case 0x20:
+              return "MBC6";
+            case 0x22:
+              return "MBC7+SENSOR+RUMBLE+RAM+BATTERY";
+            case 0xfc:
+              return "POCKET CAMERA";
+            case 0xfd:
+              return "BANDAI TAMA5";
+            case 0xfe:
+              return "HuC3";
+            case 0xff:
+              return "HuC1+RAM+BATTERY";
+            default:
+              return "Unknown";
+          }
+        },
+      };
+    }
+  </script>
+</html>

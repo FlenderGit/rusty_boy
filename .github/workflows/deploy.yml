@@ -1,0 +1,48 @@
+name: Deploy Static Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+
+      - name: Build all workspace members
+        run: cargo build --workspace --release
+      
+      - name: Install wasm32-unknown-unknown target
+        run: rustup target add wasm32-unknown-unknown
+      
+      - name: Install wasm-bindgen-cli
+        run: cargo install -f wasm-bindgen-cli --version 0.2.93
+
+      - name: Build static site
+        working-directory: ./apps/web
+        run: |
+          cargo build --target wasm32-unknown-unknown --release
+          mkdir -p generated
+          wasm-bindgen ../../target/wasm32-unknown-unknown/release/web.wasm --target web --out-dir ./generated
+
+      - name: Create documentation
+        working-directory: ./apps/web
+        run: |
+          cargo doc --no-deps
+          mv ../../target/doc ./doc
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/web
