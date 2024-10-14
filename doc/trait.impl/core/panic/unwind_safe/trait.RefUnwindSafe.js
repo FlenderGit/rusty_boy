@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"web":[["impl !<a class=\"trait\" href=\"https://doc.rust-lang.org/1.81.0/core/panic/unwind_safe/trait.RefUnwindSafe.html\" title=\"trait core::panic::unwind_safe::RefUnwindSafe\">RefUnwindSafe</a> for <a class=\"struct\" href=\"web/struct.RustyBoy.html\" title=\"struct web::RustyBoy\">RustyBoy</a>",1,["web::RustyBoy"]]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
